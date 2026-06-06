@@ -2,12 +2,18 @@ package cn.handyplus.chat.constants;
 
 import cn.handyplus.chat.enter.ChatPlayerMuteEnter;
 
+import cn.handyplus.chat.api.MessageFilter;
+import cn.handyplus.chat.api.RecipientProvider;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 常量
@@ -167,5 +173,63 @@ public final class ChatConstants {
      * @since 2.0.6
      */
     public static final Map<String, String> COMMAND_ALIAS_MAP = new HashMap<>();
+
+    // ======================== 3.4.0 新增 ========================
+
+    /**
+     * 消息投递过滤器列表（线程安全）
+     *
+     * @since 3.4.0
+     */
+    public static final List<MessageFilter> MESSAGE_FILTERS = new CopyOnWriteArrayList<>();
+
+    /**
+     * 自定义频道成员解析器列表（线程安全）
+     *
+     * @since 3.4.0
+     */
+    public static final List<RecipientProvider> RECIPIENT_PROVIDERS = new CopyOnWriteArrayList<>();
+
+    /**
+     * 私聊模式目标：玩家UUID → 私聊对象UUID
+     * <p>进入私聊模式后，玩家发送的所有聊天消息都会自动路由给此目标。</p>
+     *
+     * @since 3.4.0
+     */
+    public static final Map<UUID, UUID> PLAYER_TELL_TARGET = new ConcurrentHashMap<>();
+
+    /**
+     * 拒绝通知消息类型（跨服拒绝回传用）
+     *
+     * @since 3.4.0
+     */
+    public static final String REJECT_TYPE = "RICE_REJECT";
+
+    /**
+     * 玩家频道接收屏蔽集合（玩家自身偏好）。
+     * <p>key: 玩家UUID, value: 被屏蔽的频道名集合。
+     * 不在 Map 中的玩家 = 接收所有频道（默认行为）。
+     * 集合为空 = 接收所有频道。</p>
+     *
+     * @since 3.4.0
+     */
+    public static final Map<UUID, Set<String>> PLAYER_CHANNEL_BLOCKED = new ConcurrentHashMap<>();
+
+    /**
+     * 系统级频道屏蔽集合（不可被玩家手动覆盖）。
+     * <p>由插件（如小游戏框架）设置，用于游戏进行中禁用特定频道。
+     * 玩家无法通过 GUI 或命令解除此屏蔽。</p>
+     *
+     * @since 3.4.0
+     */
+    public static final Map<UUID, Set<String>> PLAYER_CHANNEL_SYSTEM_BLOCKED = new ConcurrentHashMap<>();
+
+    /**
+     * 管理员私聊监控（Social Spy）。
+     * <p>启用后管理员可以看到所有玩家间的私信。</p>
+     *
+     * @since 3.4.0
+     */
+    public static final Map<UUID, Boolean> PLAYER_SOCIAL_SPY = new ConcurrentHashMap<>();
 
 }

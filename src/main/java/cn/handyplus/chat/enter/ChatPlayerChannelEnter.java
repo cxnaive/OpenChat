@@ -33,4 +33,7 @@ public class ChatPlayerChannelEnter {
     @TableField(value = "is_api", comment = "是否api频道", fieldDefault = "0")
     private Boolean isApi;
 
+    @TableField(value = "tell_target", comment = "私聊模式目标UUID")
+    private String tellTarget;
+
 }

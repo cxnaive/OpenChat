@@ -1,5 +1,9 @@
 package cn.handyplus.chat.core;
 
+import cn.handyplus.chat.PlayerChat;
+import cn.handyplus.chat.api.DeliveryContext;
+import cn.handyplus.chat.api.MessageFilter;
+import cn.handyplus.chat.api.RecipientProvider;
 import cn.handyplus.chat.constants.ChatConstants;
 import cn.handyplus.chat.hook.PlaceholderApiUtil;
 import cn.handyplus.chat.param.ChatChildParam;
@@ -21,6 +25,7 @@ import cn.handyplus.lib.util.ItemStackUtil;
 import cn.handyplus.lib.util.MessageUtil;
 import cn.handyplus.lib.util.RgbTextUtil;
 import cn.handyplus.lib.util.XSeriesUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -30,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -66,10 +72,35 @@ public class ChatUtil {
         if (StrUtil.isEmpty(ChannelUtil.isChannelEnable(channel))) {
             return;
         }
+
+        boolean isTell = StrUtil.isNotEmpty(chatParam.getTellPlayerName());
+
+        // 获取接收者列表：优先使用 RecipientProvider，否则使用默认权限过滤
+        Player senderPlayer = Bukkit.getPlayer(param.getPlayerName());
+        List<Player> recipients = resolveRecipients(channel, senderPlayer);
+
+        // ====== 发送者侧检查：频道发送屏蔽 ======
+        // 如果发送者的该频道被系统级屏蔽（如游戏进行中），禁止发送
+        if (senderPlayer != null) {
+            Set<String> senderSystemBlocked = ChatConstants.PLAYER_CHANNEL_SYSTEM_BLOCKED.get(senderPlayer.getUniqueId());
+            if (senderSystemBlocked != null && senderSystemBlocked.contains(channel)) {
+                MessageUtil.sendMessage(senderPlayer, "§c该频道当前已禁用，无法发送消息");
+                return;
+            }
+            Set<String> senderBlocked = ChatConstants.PLAYER_CHANNEL_BLOCKED.get(senderPlayer.getUniqueId());
+            if (senderBlocked != null && senderBlocked.contains(channel)) {
+                MessageUtil.sendMessage(senderPlayer, "§c该频道当前已禁用，无法发送消息");
+                return;
+            }
+        }
+
+        // 构建投递上下文（过滤器用）
+        String rawMessage = chatParam.getMessage() != null ? BaseUtil.stripColor(chatParam.getMessage()) : "";
+
         // 根据频道发送消息
-        for (Player onlinePlayer : ChannelUtil.getChannelPlayer(channel)) {
+        for (Player onlinePlayer : recipients) {
             // 判断是否开启私信
-            if (StrUtil.isNotEmpty(chatParam.getTellPlayerName()) && !onlinePlayer.getName().equals(chatParam.getTellPlayerName())) {
+            if (isTell && !onlinePlayer.getName().equals(chatParam.getTellPlayerName())) {
                 continue;
             }
             // 判断是否开启附近的人
@@ -84,6 +115,35 @@ public class ChatUtil {
             if (CollUtil.isNotEmpty(ignoreList) && ignoreList.contains(param.getPlayerName())) {
                 continue;
             }
+
+            // ====== 3.4.0 新增：频道接收屏蔽检查 ======
+            Set<String> blockedChannels = ChatConstants.PLAYER_CHANNEL_BLOCKED.get(onlinePlayer.getUniqueId());
+            if (blockedChannels != null && blockedChannels.contains(channel)) {
+                continue;
+            }
+            // 系统级屏蔽（不可被玩家自行覆盖，如游戏进行中）
+            Set<String> systemBlocked = ChatConstants.PLAYER_CHANNEL_SYSTEM_BLOCKED.get(onlinePlayer.getUniqueId());
+            if (systemBlocked != null && systemBlocked.contains(channel)) {
+                continue;
+            }
+
+            // ====== 3.4.0 新增：投递前过滤器检查 ======
+            if (!ChatConstants.MESSAGE_FILTERS.isEmpty()) {
+                DeliveryContext ctx = new DeliveryContext(channel, param.getPlayerName(), rawMessage, isTell, chatParam.getTellPlayerName());
+                boolean rejected = false;
+                for (MessageFilter filter : ChatConstants.MESSAGE_FILTERS) {
+                    String rejectReason = filter.shouldDeliver(onlinePlayer, ctx);
+                    if (rejectReason != null) {
+                        handleRejection(param.getPlayerName(), onlinePlayer.getName(), rejectReason);
+                        rejected = true;
+                        break;
+                    }
+                }
+                if (rejected) {
+                    continue;
+                }
+            }
+
             rgbTextUtil.send(onlinePlayer);
             // 如果开启艾特，发送消息
             if (ChatConstants.CHAT_TYPE.equals(param.getType()) && ConfigUtil.CHAT_CONFIG.getBoolean("at.enable")) {
@@ -100,6 +160,103 @@ public class ChatUtil {
         // 控制台消息
         if (isConsoleMsg) {
             rgbTextUtil.sendConsole();
+        }
+
+        // ====== 3.4.0 新增：管理员监控（Social Spy）======
+        if (!ChatConstants.PLAYER_SOCIAL_SPY.isEmpty()) {
+            // 构建监控消息
+            String spyMsg;
+            if (isTell) {
+                spyMsg = "§7[§cSpy§7] §f" + param.getPlayerName() + " §7→ §f" + chatParam.getTellPlayerName() + "§7: §f" + rawMessage;
+            } else {
+                // 查找频道描述（如房间号、队伍名）
+                String channelDesc = resolveChannelDescription(channel, senderPlayer);
+                String channelLabel = channelDesc != null
+                    ? "§7[§cSpy§7] §7[" + channelDesc + "§7]"
+                    : "§7[§cSpy§7]";
+                spyMsg = channelLabel + " §f" + param.getPlayerName() + "§7: §f" + rawMessage;
+            }
+            for (Map.Entry<UUID, Boolean> entry : ChatConstants.PLAYER_SOCIAL_SPY.entrySet()) {
+                if (!Boolean.TRUE.equals(entry.getValue())) continue;
+                if (entry.getKey() != null) {
+                    Player spy = Bukkit.getPlayer(entry.getKey());
+                    // 私聊不发给私聊双方自己
+                    if (spy != null && spy.isOnline()
+                        && !(isTell && (spy.getName().equals(param.getPlayerName()) || spy.getName().equals(chatParam.getTellPlayerName())))) {
+                        spy.sendMessage(spyMsg);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 解析频道接收者列表。
+     * 优先查找已注册的 {@link RecipientProvider}，否则使用默认的权限过滤机制。
+     *
+     * @param channel 频道 ID
+     * @param sender  发送者（可能为 null，跨服消息时发送者不在本服）
+     * @return 接收者列表
+     * @since 3.4.0
+     */
+    private static List<Player> resolveRecipients(String channel, Player sender) {
+        for (RecipientProvider provider : ChatConstants.RECIPIENT_PROVIDERS) {
+            if (channel.startsWith(provider.getChannelPrefix())) {
+                List<Player> recipients = provider.getRecipients(channel, sender);
+                if (recipients != null) {
+                    return recipients;
+                }
+            }
+        }
+        return ChannelUtil.getChannelPlayer(channel);
+    }
+
+    /**
+     * 查找频道描述（用于管理员监控显示）。
+     *
+     * @param channel 频道 ID
+     * @param sender  发送者
+     * @return 描述文本，null 表示无描述
+     * @since 3.4.0
+     */
+    private static String resolveChannelDescription(String channel, Player sender) {
+        for (RecipientProvider provider : ChatConstants.RECIPIENT_PROVIDERS) {
+            if (channel.startsWith(provider.getChannelPrefix())) {
+                String desc = provider.getChannelDescription(channel, sender);
+                if (desc != null) return desc;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 处理消息投递拒绝通知。
+     * <p>如果发送者在本服则直接通知；如果发送者在其他子服，通过 Forward 回传拒绝通知。</p>
+     *
+     * @param senderName          发送者名称
+     * @param rejectedPlayerName  被拒绝投递的玩家名称
+     * @param reason              拒绝原因
+     * @since 3.4.0
+     */
+    private static void handleRejection(String senderName, String rejectedPlayerName, String reason) {
+        // 尝试本服直接通知
+        Player sender = Bukkit.getPlayer(senderName);
+        if (sender != null && sender.isOnline()) {
+            MessageUtil.sendMessage(sender, "§c发送给 §e" + rejectedPlayerName + " §c的消息被拒绝: §7" + reason);
+            return;
+        }
+        // 跨服：发送拒绝通知
+        BcUtil.BcMessageParam rejectParam = new BcUtil.BcMessageParam();
+        rejectParam.setPluginName(PlayerChat.INSTANCE.getName());
+        rejectParam.setType(ChatConstants.REJECT_TYPE);
+        rejectParam.setPlayerName(rejectedPlayerName);
+        rejectParam.setSenderName(senderName);
+        rejectParam.setMessage(reason);
+        rejectParam.setTimestamp(System.currentTimeMillis());
+        // 使用任意在线玩家发送 Forward
+        Player anyPlayer = Bukkit.getOnlinePlayers().iterator().next();
+        if (anyPlayer != null) {
+            BcUtil.sendParamForward(anyPlayer, rejectParam);
         }
     }
 

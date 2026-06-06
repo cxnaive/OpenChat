@@ -62,6 +62,37 @@ public class ChatPlayerChannelService {
     }
 
     /**
+     * 设置私聊模式目标
+     *
+     * @param playerUuid 玩家 UUID
+     * @param tellTarget 私聊目标 UUID（null 表示退出私聊模式）
+     * @since 3.4.0
+     */
+    public void setTellTarget(UUID playerUuid, UUID tellTarget) {
+        String targetStr = tellTarget != null ? tellTarget.toString() : null;
+        // 先尝试更新
+        Db<ChatPlayerChannelEnter> db = Db.use(ChatPlayerChannelEnter.class);
+        db.update().set(ChatPlayerChannelEnter::getTellTarget, targetStr);
+        db.where().eq(ChatPlayerChannelEnter::getPlayerUuid, playerUuid);
+        int updated = db.execution().update();
+        // 如果没有记录则插入
+        if (updated == 0) {
+            ChatPlayerChannelEnter enter = new ChatPlayerChannelEnter();
+            enter.setPlayerUuid(playerUuid);
+            enter.setChannel(ChatConstants.DEFAULT);
+            enter.setTellTarget(targetStr);
+            enter.setIsApi(false);
+            add(enter);
+        }
+        // 同步内存
+        if (tellTarget != null) {
+            ChatConstants.PLAYER_TELL_TARGET.put(playerUuid, tellTarget);
+        } else {
+            ChatConstants.PLAYER_TELL_TARGET.remove(playerUuid);
+        }
+    }
+
+    /**
      * 根据频道查询
      *
      * @param channel 频道

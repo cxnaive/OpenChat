@@ -4,6 +4,8 @@ import cn.handyplus.chat.hook.PlaceholderUtil;
 import cn.handyplus.chat.listener.ChatPluginMessageListener;
 import cn.handyplus.chat.util.ClearItemJob;
 import cn.handyplus.chat.util.ConfigUtil;
+import cn.handyplus.chat.command.ChannelMainCommand;
+import cn.handyplus.chat.listener.ChannelGuiListener;
 import cn.handyplus.lib.InitApi;
 import cn.handyplus.lib.constants.HookPluginEnum;
 import cn.handyplus.lib.util.BcUtil;
@@ -43,6 +45,10 @@ public class PlayerChat extends JavaPlugin {
                 .enableBc()
                 .checkVersion();
         ChatPluginMessageListener.getInstance().register();
+        // 注册 /channel 独立命令
+        getCommand("channel").setExecutor(new ChannelMainCommand());
+        // 注册频道 GUI 监听器
+        getServer().getPluginManager().registerEvents(new ChannelGuiListener(), this);
         // 定时任务启动
         ClearItemJob.init();
         MessageUtil.sendConsoleMessage(ChatColor.GREEN + "已成功载入服务器!");

@@ -173,6 +173,7 @@ public final class BcUtil {
       private String type;
       private String message;
       private String playerName;
+      private String senderName;
       private Long timestamp;
 
       @Generated
@@ -218,6 +219,16 @@ public final class BcUtil {
       @Generated
       public void setPlayerName(String playerName) {
          this.playerName = playerName;
+      }
+
+      @Generated
+      public String getSenderName() {
+         return this.senderName;
+      }
+
+      @Generated
+      public void setSenderName(String senderName) {
+         this.senderName = senderName;
       }
 
       @Generated

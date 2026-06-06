@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +56,9 @@ public class ChannelCommand implements IHandyCommandEvent {
         // 是否有频道权限
         String channelPermission = ChatConstants.PLAYER_CHAT_USE + chatChannel;
         AssertUtil.notTrue(!player.hasPermission(channelPermission), BaseUtil.getLangMsg("noChannelPermission", MapUtil.of("${permission}", channelPermission)));
+        // 系统级屏蔽检查：不允许切换到被系统禁用的频道（如游戏进行中）
+        Set<String> systemBlocked = ChatConstants.PLAYER_CHANNEL_SYSTEM_BLOCKED.get(player.getUniqueId());
+        AssertUtil.notTrue(systemBlocked != null && systemBlocked.contains(chatChannel), "§c该频道当前已被系统禁用，无法切换");
         // 设置频道
         ChatPlayerChannelService.getInstance().setChannel(player.getUniqueId(), channel);
         String channelName = ChannelUtil.getChannelName(chatChannel);

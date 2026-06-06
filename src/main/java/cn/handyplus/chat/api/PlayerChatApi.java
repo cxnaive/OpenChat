@@ -187,6 +187,111 @@ public class PlayerChatApi {
     }
 
     /**
+     * 注册消息投递过滤器
+     *
+     * @param filter 过滤器实现
+     * @since 3.4.0
+     */
+    public void registerMessageFilter(MessageFilter filter) {
+        if (filter != null && !ChatConstants.MESSAGE_FILTERS.contains(filter)) {
+            ChatConstants.MESSAGE_FILTERS.add(filter);
+        }
+    }
+
+    /**
+     * 注销消息投递过滤器
+     *
+     * @param filter 过滤器实现
+     * @since 3.4.0
+     */
+    public void unregisterMessageFilter(MessageFilter filter) {
+        ChatConstants.MESSAGE_FILTERS.remove(filter);
+    }
+
+    /**
+     * 注销指定插件的所有消息投递过滤器
+     *
+     * @param plugin 插件
+     * @since 3.4.0
+     */
+    public void unregisterMessageFilters(Plugin plugin) {
+        // 支持 MessageFilter 实现中持有插件引用的场景
+        ChatConstants.MESSAGE_FILTERS.removeIf(f -> f.getClass().getName().startsWith(plugin.getClass().getPackage().getName()));
+    }
+
+    /**
+     * 注册自定义频道成员解析器
+     *
+     * @param provider 解析器实现
+     * @since 3.4.0
+     */
+    public void registerRecipientProvider(RecipientProvider provider) {
+        if (provider != null && !ChatConstants.RECIPIENT_PROVIDERS.contains(provider)) {
+            ChatConstants.RECIPIENT_PROVIDERS.add(provider);
+        }
+    }
+
+    /**
+     * 注销自定义频道成员解析器
+     *
+     * @param provider 解析器实现
+     * @since 3.4.0
+     */
+    public void unregisterRecipientProvider(RecipientProvider provider) {
+        ChatConstants.RECIPIENT_PROVIDERS.remove(provider);
+    }
+
+    /**
+     * 注销指定插件的所有频道成员解析器
+     *
+     * @param plugin 插件
+     * @since 3.4.0
+     */
+    public void unregisterRecipientProviders(Plugin plugin) {
+        ChatConstants.RECIPIENT_PROVIDERS.removeIf(p -> p.getClass().getName().startsWith(plugin.getClass().getPackage().getName()));
+    }
+
+    /**
+     * 设置玩家私聊模式目标
+     *
+     * @param player 玩家
+     * @param target 私聊目标（null 表示退出私聊模式）
+     * @since 3.4.0
+     */
+    public void setTellTarget(Player player, UUID target) {
+        if (target == null) {
+            ChatConstants.PLAYER_TELL_TARGET.remove(player.getUniqueId());
+            // 恢复到默认频道
+            ChatConstants.PLAYER_CHAT_CHANNEL.put(player.getUniqueId(), ChatConstants.DEFAULT);
+        } else {
+            ChatConstants.PLAYER_TELL_TARGET.put(player.getUniqueId(), target);
+            // 切换频道到 tell（不持久化，tell 模式是临时的）
+        }
+    }
+
+    /**
+     * 获取玩家私聊模式目标
+     *
+     * @param playerUuid 玩家 UUID
+     * @return 私聊目标 UUID，null 表示不在私聊模式中
+     * @since 3.4.0
+     */
+    public UUID getTellTarget(UUID playerUuid) {
+        return ChatConstants.PLAYER_TELL_TARGET.get(playerUuid);
+    }
+
+    /**
+     * 判断玩家是否处于私聊模式
+     *
+     * @param playerUuid 玩家 UUID
+     * @return true 表示正在私聊模式中
+     * @since 3.4.0
+     */
+    public boolean isInTellMode(UUID playerUuid) {
+        return ChatConstants.PLAYER_TELL_TARGET.containsKey(playerUuid);
+    }
+
+    /**
      * 处理频道名称
      *
      * @param plugin  插件

@@ -16,7 +16,7 @@ helps:
   - "   &8&l- &f look [玩家名] &7查看玩家喇叭数量"
   - "   &8&l- &f channel [频道名] &7切换聊天频道"
   - "   &8&l- &f lb [喇叭类型] [消息]  &7玩家使用喇叭"
-  - "   &8&l- &f tell [玩家] [消息]  &7私信玩家消息"
+  - "   &8&l- &f tell [玩家] [消息]  &7私信玩家(无消息进入私聊模式)"
   - "   &8&l- &f nick [昵称] (玩家名) &7设置昵称"
   - "   &8&l- &f mute [玩家名] [时长] (原因)  &7禁言玩家(支持: 60/1m/1h/1d/1w/1M/1y)"
   - "   &8&l- &f unmute [玩家名]  &7解除禁言"
@@ -41,7 +41,7 @@ channelDoesNotExist: "&8[&c✘&8] &7频道不存在"
 pluginChannel: "&8[&c✘&8] &7无法切换到该频道"
 noChannelPermission: "&8[&c✘&8] &7你没有 &a${permission} &7权限切换到该频道"
 channelSwitchMsg: "&8[&a✔&8] &7已切换到频道 ${channel}"
-sendTell: "&7&o你悄悄地对 ${player} 说: ${message}"
+sendTell: "&7[&f你 &7-> &f${player}&7] &f${message}"
 sendTellErrorMsg: "&8[&c✘&8] &7不能发送私信给自己"
 blacklistMsg: "&8[&c✘&8] &7请文明用语"
 lbParamFailureMsg: "&8[&c✘&8] &7参数错误 使用方法: &a/lb [喇叭类型] [消息内容]"
@@ -71,6 +71,11 @@ playerNotFoundMsg: "&8[&c✘&8] &7玩家不存在"
 mutedMsg: "&8[&c✘&8] &7你已被禁言, 剩余 ${time} 秒, 原因: ${reason}"
 mutedNotifyMsg: "&8[&c✘&8] &7你已被禁言 ${time} 秒, 原因: ${reason}"
 unmutedNotifyMsg: "&8[&a✔&8] &a你的禁言已被解除"
+
+# 私聊模式 (3.4.0)
+tellModeEnter: "&8[&a✔&8] &7已进入与 &a${player} &7的私聊模式 &8(输入 /tell 退出)"
+tellModeExit: "&8[&a✔&8] &7已退出与 &a${player} &7的私聊模式"
+tellModeNotInMode: "&8[&c✘&8] &7你当前不在私聊模式中"
 
 # 用于输入指令时候tab自动提醒帮助(只建议翻译,不建议更改)
 tabHelp:

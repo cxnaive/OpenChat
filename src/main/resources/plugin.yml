@@ -11,6 +11,9 @@ commands:
   playerChat:
     description: 一款有点好用的聊天插件
     aliases: [ plc ]
+  channel:
+    description: 频道管理
+    usage: /channel [admin|频道名]
   lb:
     description: 一款有点好用的聊天插件
     aliases: [ lb ]
@@ -58,7 +61,7 @@ permissions:
     default: op
   playerChat.channel:
     description: 切换频道
-    default: op
+    default: true
   playerChat.item:
     description: 查看展示物品
     default: true
@@ -70,13 +73,13 @@ permissions:
     default: true
   playerChat.tell:
     description: 私聊权限
-    default: op
+    default: true
   playerChat.chat.tell:
     description: 私信频道查看权限
     default: true
   playerChat.use.tell:
     description: 私信频道使用权限
-    default: op
+    default: true
   playerChat.clearBossBar:
     description: 移除全部BossBar消息
     default: op

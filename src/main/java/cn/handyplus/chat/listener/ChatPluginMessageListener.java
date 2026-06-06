@@ -72,6 +72,13 @@ public class ChatPluginMessageListener implements PluginMessageListener {
         if (between > 1) {
             return;
         }
+
+        // ====== 3.4.0: 跨服拒绝通知处理 ======
+        if (ChatConstants.REJECT_TYPE.equals(bcMessageParam.getType())) {
+            handleRejectNotification(bcMessageParam);
+            return;
+        }
+
         // 群组聊天消息
         if (ChatConstants.CHAT_TYPE.equals(bcMessageParam.getType()) || ChatConstants.ITEM_TYPE.equals(bcMessageParam.getType())) {
             ChatUtil.asyncSendMsg(bcMessageParam, false);
@@ -90,6 +97,28 @@ public class ChatPluginMessageListener implements PluginMessageListener {
         }
         // 发送消息
         HornUtil.sendMsg(player, bcMessageParam);
+    }
+
+    /**
+     * 处理跨服拒绝通知。
+     * <p>当其他子服上的过滤器拒绝了消息投递时，会通过 Forward 回传拒绝通知。
+     * 本方法在本服查找到发送者并展示拒绝原因。</p>
+     *
+     * @param param 拒绝通知参数
+     * @since 3.4.0
+     */
+    private void handleRejectNotification(BcUtil.BcMessageParam param) {
+        String senderName = param.getSenderName();
+        String rejectedPlayerName = param.getPlayerName();
+        String reason = param.getMessage();
+
+        if (senderName == null || senderName.isEmpty()) {
+            return;
+        }
+        Player sender = Bukkit.getPlayer(senderName);
+        if (sender != null && sender.isOnline()) {
+            MessageUtil.sendMessage(sender, "§c发送给 §e" + rejectedPlayerName + " §c的消息被拒绝: §7" + reason);
+        }
     }
 
 }
