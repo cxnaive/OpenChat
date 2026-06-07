@@ -52,6 +52,10 @@ public class PlayerItemChatListener implements Listener {
         if (!itemEnable) {
             return;
         }
+        // 检查玩家是否被禁用展示物品
+        if (ChatConstants.PLAYER_ITEM_DISPLAY_DISABLED.contains(event.getPlayer().getUniqueId())) {
+            return;
+        }
         String format = ConfigUtil.CHAT_CONFIG.getString("item.format", "[i]");
         String message = event.getMessage();
         if (!message.contains(format)) {

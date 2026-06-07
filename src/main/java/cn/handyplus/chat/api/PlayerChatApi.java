@@ -281,6 +281,38 @@ public class PlayerChatApi {
     }
 
     /**
+     * 禁用玩家的展示物品功能。
+     * <p>禁用后该玩家发送 [i] 不会触发展示物品。</p>
+     *
+     * @param playerUuid 玩家 UUID
+     * @since 3.4.0
+     */
+    public void disableItemDisplay(@NotNull UUID playerUuid) {
+        ChatConstants.PLAYER_ITEM_DISPLAY_DISABLED.add(playerUuid);
+    }
+
+    /**
+     * 启用玩家的展示物品功能（恢复默认行为）。
+     *
+     * @param playerUuid 玩家 UUID
+     * @since 3.4.0
+     */
+    public void enableItemDisplay(@NotNull UUID playerUuid) {
+        ChatConstants.PLAYER_ITEM_DISPLAY_DISABLED.remove(playerUuid);
+    }
+
+    /**
+     * 检查玩家的展示物品功能是否被禁用。
+     *
+     * @param playerUuid 玩家 UUID
+     * @return true 表示已被禁用
+     * @since 3.4.0
+     */
+    public boolean isItemDisplayDisabled(@NotNull UUID playerUuid) {
+        return ChatConstants.PLAYER_ITEM_DISPLAY_DISABLED.contains(playerUuid);
+    }
+
+    /**
      * 判断玩家是否处于私聊模式
      *
      * @param playerUuid 玩家 UUID

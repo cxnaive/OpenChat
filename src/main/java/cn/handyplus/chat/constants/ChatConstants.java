@@ -232,4 +232,10 @@ public final class ChatConstants {
      */
     public static final Map<UUID, Boolean> PLAYER_SOCIAL_SPY = new ConcurrentHashMap<>();
 
+    /**
+     * 禁用展示物品的玩家集合。
+     * <p>在此集合中的玩家发送 [i] 时不会触发展示物品功能。</p>
+     */
+    public static final Set<UUID> PLAYER_ITEM_DISPLAY_DISABLED = ConcurrentHashMap.newKeySet();
+
 }
