@@ -1,0 +1,162 @@
+# ============================================
+# MessageService 公告配置
+# 在此定义所有公告
+# ============================================
+
+# 使用说明：
+# 1. 复制下方的示例，取消注释后修改
+# 2. 或者创建新的公告配置
+# 3. 使用 /broadcast reload 重载配置
+
+announcements:
+  # ============================================
+  # 示例公告配置（已注释，如需使用请取消注释）
+  # ============================================
+  
+  # # 欢迎公告示例 - 玩家加入时触发
+  # welcome:
+  #   enabled: true
+  #   priority: 10
+  #   content:
+  #     - "&6&l欢迎来到服务器！"
+  #     - "&e当前在线: %online% 玩家"
+  #     - "&7使用 &a/spawn &7返回出生点"
+  #   display:
+  #     type: "chat"
+  #   target:
+  #     type: "all"
+  #     value: "*"
+  #   trigger:
+  #     type: "event"
+  #     events:
+  #       - "PlayerJoinEvent"
+  #   cooldown:
+  #     global: 0
+  #     per-player: 300
+  
+  # # 定时公告示例 - 每30分钟发送
+  # reminder:
+  #   enabled: true
+  #   priority: 5
+  #   content:
+  #     - "&c记得每天签到领取奖励！"
+  #     - "&7输入 &a/signin &7进行签到"
+  #   display:
+  #     type: "chat"
+  #   target:
+  #     type: "all"
+  #     value: "*"
+  #   trigger:
+  #     type: "schedule"
+  #     schedule: "30m"
+  #   cooldown:
+  #     global: 0
+  #     per-player: 0
+  
+  # # Title公告示例 - 玩家加入时显示标题
+  # title_welcome:
+  #   enabled: true
+  #   priority: 8
+  #   content:
+  #     - "&6&l欢迎 %player%!"
+  #     - "&e祝你游戏愉快"
+  #   display:
+  #     type: "title"
+  #     settings:
+  #       fade-in: 10
+  #       stay: 70
+  #       fade-out: 20
+  #   target:
+  #     type: "all"
+  #     value: "*"
+  #   trigger:
+  #     type: "event"
+  #     events:
+  #       - "PlayerJoinEvent"
+  #   cooldown:
+  #     global: 0
+  #     per-player: 600
+  
+  # # ActionBar公告示例 - 定时显示在快捷栏上方
+  # actionbar_tip:
+  #   enabled: true
+  #   priority: 3
+  #   content:
+  #     - "&e提示: 按 &aF &e打开菜单"
+  #   display:
+  #     type: "actionbar"
+  #   target:
+  #     type: "all"
+  #     value: "*"
+  #   trigger:
+  #     type: "schedule"
+  #     schedule: "5m"
+  #   cooldown:
+  #     global: 0
+  #     per-player: 60
+  
+  # # BossBar公告示例 - 活动公告
+  # bossbar_event:
+  #   enabled: false
+  #   priority: 7
+  #   content:
+  #     - "&c&l活动进行中！"
+  #   display:
+  #     type: "bossbar"
+  #     settings:
+  #       color: "RED"
+  #       style: "SOLID"
+  #       stay: 200
+  #   target:
+  #     type: "all"
+  #     value: "*"
+  #   trigger:
+  #     type: "manual"
+  #   cooldown:
+  #     global: 0
+  #     per-player: 0
+
+  # # 首次登录公告示例 - 新玩家首次加入时触发
+  # first_join_welcome:
+  #   enabled: true
+  #   priority: 10
+  #   content:
+  #     - "&6&l欢迎 %player% 首次加入服务器！"
+  #     - "&e这是你的第一次冒险，祝你游戏愉快！"
+  #     - "&7使用 &a/help &7查看帮助信息"
+  #   display:
+  #     type: "title"
+  #     settings:
+  #       fade-in: 10
+  #       stay: 100
+  #       fade-out: 20
+  #   target:
+  #     type: "player"  # 仅对触发玩家显示
+  #     value: "@self"
+  #   trigger:
+  #     type: "first_join"  # 首次登录触发
+  #   cooldown:
+  #     global: 0
+  #     per-player: 0
+
+  # # 全服广播新玩家加入示例
+  # first_join_broadcast:
+  #   enabled: true
+  #   priority: 9
+  #   content:
+  #     - "&6&l新玩家 %player% 加入了服务器！"
+  #     - "&e大家快来欢迎他/她！"
+  #   display:
+  #     type: "chat"
+  #   target:
+  #     type: "all"  # 广播给所有玩家
+  #     value: "*"
+  #   trigger:
+  #     type: "first_join"
+  #   cooldown:
+  #     global: 60  # 全服冷却60秒，防止刷号
+  #     per-player: 0
+
+  # ============================================
+  # 在此添加你的自定义公告
+  # ============================================

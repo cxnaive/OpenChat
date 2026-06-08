@@ -13,12 +13,13 @@ import cn.handyplus.lib.annotation.HandyListener;
 import cn.handyplus.lib.core.JsonUtil;
 import cn.handyplus.lib.core.StrUtil;
 import cn.handyplus.lib.util.BcUtil;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import io.papermc.paper.event.player.AsyncChatEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,9 @@ import java.util.UUID;
 
 /**
  * 玩家聊天监听器
+ * <p>使用 Paper 的 AsyncChatEvent 替代 Bukkit 的 AsyncPlayerChatEvent，
+ * 确保与其他使用 AsyncChatEvent 的插件（如 AdminTool）在同一事件管线中，
+ * 正确尊重事件取消。</p>
  *
  * @author handy
  */
@@ -38,11 +42,13 @@ public class PlayerChatListener implements Listener {
      * @param event 事件
      */
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         if (event.isCancelled()) {
             return;
         }
         Player player = event.getPlayer();
+        // 提取纯文本消息
+        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
         // 取消事件
         event.setCancelled(true);
 
@@ -52,9 +58,9 @@ public class PlayerChatListener implements Listener {
             Player tellTarget = Bukkit.getPlayer(tellTargetUuid);
             if (tellTarget != null && tellTarget.isOnline()) {
                 // 私聊模式：路由到私聊目标
-                sendMsg(player, event.getMessage(), ChatConstants.TELL, tellTarget.getName());
+                sendMsg(player, message, ChatConstants.TELL, tellTarget.getName());
                 // 发送者回显
-                String rawMsg = event.getMessage();
+                String rawMsg = message;
                 if (!player.hasPermission(ChatConstants.CHAT_COLOR)) {
                     rawMsg = cn.handyplus.lib.util.BaseUtil.stripColor(rawMsg);
                 }
@@ -68,7 +74,7 @@ public class PlayerChatListener implements Listener {
         }
 
         // 正常频道发送
-        sendMsg(player, event.getMessage(), ChatUtil.getChannel(player), null);
+        sendMsg(player, message, ChatUtil.getChannel(player), null);
     }
 
     /**

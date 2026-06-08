@@ -17,6 +17,11 @@ commands:
   lb:
     description: 一款有点好用的聊天插件
     aliases: [ lb ]
+  broadcast:
+    description: 公告系统主命令
+    usage: /broadcast <子命令> [参数]
+    aliases: [ bc, announce, ann, msg ]
+    permission: messageservice.use
 permissions:
   playerChat.*:
     description: 一款有点好用的聊天插件
@@ -41,6 +46,7 @@ permissions:
       playerChat.nick.other: true
       playerChat.mute: true
       playerChat.unmute: true
+      messageservice.admin: true
   playerChat.reload:
     description: 重新加载配置
     default: op
@@ -113,3 +119,52 @@ permissions:
   playerChat.unmute:
     description: 解除禁言
     default: op
+  # ==================== 公告系统权限（原 MessageService） ====================
+  messageservice.use:
+    description: 使用公告命令的基础权限
+    default: op
+  messageservice.create:
+    description: 创建公告
+    default: op
+  messageservice.edit:
+    description: 编辑公告
+    default: op
+  messageservice.delete:
+    description: 删除公告
+    default: op
+  messageservice.list:
+    description: 查看公告列表
+    default: op
+  messageservice.send:
+    description: 发送公告
+    default: op
+  messageservice.sendnow:
+    description: 立即发送消息
+    default: op
+  messageservice.broadcast:
+    description: 广播消息
+    default: op
+  messageservice.preview:
+    description: 预览公告
+    default: op
+  messageservice.reload:
+    description: 重新加载配置
+    default: op
+  messageservice.gui:
+    description: 使用图形化界面
+    default: op
+  messageservice.admin:
+    description: 所有管理权限
+    default: op
+    children:
+      messageservice.use: true
+      messageservice.create: true
+      messageservice.edit: true
+      messageservice.delete: true
+      messageservice.list: true
+      messageservice.send: true
+      messageservice.sendnow: true
+      messageservice.broadcast: true
+      messageservice.preview: true
+      messageservice.reload: true
+      messageservice.gui: true

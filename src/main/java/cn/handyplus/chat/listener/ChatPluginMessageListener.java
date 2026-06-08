@@ -8,17 +8,19 @@ import cn.handyplus.chat.util.ConfigUtil;
 import cn.handyplus.lib.constants.BaseConstants;
 import cn.handyplus.lib.core.CollUtil;
 import cn.handyplus.lib.core.DateUtil;
+import cn.handyplus.lib.core.JsonUtil;
 import cn.handyplus.lib.util.BcUtil;
 import cn.handyplus.lib.util.MessageUtil;
+import com.example.messageservice.managers.CrossServerSyncManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +53,12 @@ public class ChatPluginMessageListener implements PluginMessageListener {
      */
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
+        // ====== 处理 BungeeCord 原始响应（如 GetServers） ======
+        handleBungeeCordRawResponse(channel, message);
+
         // 自定义消息处理
-        String server = BaseConstants.CONFIG.getString("server");
+        // 优先使用 BungeeCord 自动发现的服务器名，回退到配置文件
+        String server = getEffectiveServerName();
         MessageUtil.sendConsoleDebugMessage("子服:" + server + "收到消息");
         // 设置玩家列表
         List<String> playerList = BcUtil.getPlayerList(message);
@@ -67,6 +73,15 @@ public class ChatPluginMessageListener implements PluginMessageListener {
             return;
         }
         BcUtil.BcMessageParam bcMessageParam = paramOptional.get();
+
+        // ====== 公告模块消息拦截 ======
+        if (CrossServerSyncManager.isAnnouncementType(bcMessageParam.getType())) {
+            CrossServerSyncManager syncManager = getCrossServerSyncManager();
+            if (syncManager != null) {
+                syncManager.handleIncomingMessage(bcMessageParam);
+            }
+            return;
+        }
         // 判断时间太久的不发送
         long between = DateUtil.between(new Date(bcMessageParam.getTimestamp()), new Date(), ChronoUnit.MINUTES);
         if (between > 1) {
@@ -118,6 +133,62 @@ public class ChatPluginMessageListener implements PluginMessageListener {
         Player sender = Bukkit.getPlayer(senderName);
         if (sender != null && sender.isOnline()) {
             MessageUtil.sendMessage(sender, "§c发送给 §e" + rejectedPlayerName + " §c的消息被拒绝: §7" + reason);
+        }
+    }
+
+    /**
+     * 获取有效的服务器名称
+     * 优先使用 BungeeCord 自动发现的服务器名，回退到配置文件中的 server 字段
+     */
+    private String getEffectiveServerName() {
+        try {
+            CrossServerSyncManager syncManager = getCrossServerSyncManager();
+            if (syncManager != null) {
+                return syncManager.getServerName();
+            }
+        } catch (Exception ignored) {
+        }
+        return BaseConstants.CONFIG.getString("server");
+    }
+
+    /**
+     * 获取 CrossServerSyncManager 实例
+     * 通过 PlayerChat 中注入的 MessageServicePlugin 获取
+     */
+    private CrossServerSyncManager getCrossServerSyncManager() {
+        try {
+            return com.example.messageservice.MessageServicePlugin.getInstance().getCrossServerSyncManager();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 处理 BungeeCord 原始响应（非 Forward 格式）
+     * 例如 GetServers 响应
+     */
+    private void handleBungeeCordRawResponse(String channel, byte[] message) {
+        if (!BcUtil.BUNGEE_CORD_CHANNEL.equals(channel)) return;
+        try {
+            DataInputStream in = new DataInputStream(new ByteArrayInputStream(message));
+            String subChannel = in.readUTF();
+
+            if ("GetServers".equals(subChannel)) {
+                String serverListStr = in.readUTF();
+                List<String> servers = Arrays.asList(serverListStr.split(", "));
+                CrossServerSyncManager syncManager = getCrossServerSyncManager();
+                if (syncManager != null) {
+                    syncManager.setDiscoveredServers(servers);
+                }
+            } else if ("GetServer".equals(subChannel)) {
+                String serverName = in.readUTF();
+                CrossServerSyncManager syncManager = getCrossServerSyncManager();
+                if (syncManager != null) {
+                    syncManager.setDiscoveredServerName(serverName);
+                }
+            }
+        } catch (Exception ignored) {
+            // 非标准 BungeeCord 响应格式，忽略
         }
     }
 

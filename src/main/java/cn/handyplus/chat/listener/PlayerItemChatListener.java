@@ -18,13 +18,14 @@ import cn.handyplus.lib.util.BaseUtil;
 import cn.handyplus.lib.util.BcUtil;
 import cn.handyplus.lib.util.ItemStackUtil;
 import cn.handyplus.lib.util.MessageUtil;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -44,7 +45,7 @@ public class PlayerItemChatListener implements Listener {
      * @param event 事件
      */
     @EventHandler(priority = EventPriority.HIGH)
-    public void onItemChat(AsyncPlayerChatEvent event) {
+    public void onItemChat(AsyncChatEvent event) {
         if (event.isCancelled()) {
             return;
         }
@@ -57,7 +58,7 @@ public class PlayerItemChatListener implements Listener {
             return;
         }
         String format = ConfigUtil.CHAT_CONFIG.getString("item.format", "[i]");
-        String message = event.getMessage();
+        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
         if (!message.contains(format)) {
             return;
         }

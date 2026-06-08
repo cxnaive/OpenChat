@@ -58,3 +58,59 @@ isCheckUpdate: true
 
 # op登录时候是否发送更新提醒
 isCheckUpdateToOpMsg: true
+
+# ============================================
+# 公告模块配置（原 MessageService）
+# ============================================
+
+# 调试设置
+debug:
+  # 启用调试模式（输出详细的跨服消息日志）
+  enabled: false
+
+# 性能设置
+performance:
+  # 每tick最大处理公告数
+  max-per-tick: 50
+  # 批量发送玩家数
+  batch-size: 100
+  # 队列检查间隔(tick)
+  queue-check-interval: 20
+
+# 格式设置
+format:
+  # 公告前缀
+  prefix: "&6[公告] &f"
+  # 默认颜色
+  default-color: "&e"
+  # 日期格式
+  date-format: "yyyy-MM-dd HH:mm"
+
+# 多线程设置
+threading:
+  # 启用区域检查
+  region-check-enabled: true
+  # 回退调度器类型 (async 或 sync)
+  fallback-scheduler: async
+
+# 跨服同步设置
+cross-server:
+  # 启用跨服同步
+  enabled: false
+  # 服务器名称标识 (每个子服务器必须唯一)
+  server-name: "server1"
+  # 定期同步间隔（秒，0表示禁用）
+  sync-interval: 5
+  # 可用区服列表 (用于GUI选择)
+  available-servers:
+    - "server1"
+    - "server2"
+
+# 数据备份设置
+backup:
+  # 启用自动备份
+  auto-enabled: true
+  # 备份间隔（小时）
+  interval-hours: 24
+  # 保留备份天数
+  keep-days: 7

@@ -86,6 +86,31 @@ public final class BcUtil {
       sendForward(player, JsonUtil.toJson(content));
    }
 
+   /**
+    * 发送参数到指定服务器 (Forward 格式)
+    * 支持发送到单个目标服务器而非全部
+    *
+    * @param player       玩家
+    * @param targetServer 目标服务器名称（"ALL" 表示所有服务器）
+    * @param content      消息参数
+    */
+   public static void sendParamForwardToServer(Player player, String targetServer, BcUtil.BcMessageParam content) {
+      try {
+         ByteArrayDataOutput out = ByteStreams.newDataOutput();
+         out.writeUTF("Forward");
+         out.writeUTF(targetServer);
+         out.writeUTF("PlayerChat");
+         byte[] jsonBytes = ByteStreams.newDataOutput().toByteArray();
+         ByteArrayDataOutput dataOut = ByteStreams.newDataOutput();
+         dataOut.writeUTF(JsonUtil.toJson(content));
+         out.writeShort(dataOut.toByteArray().length);
+         out.write(dataOut.toByteArray());
+         player.sendPluginMessage(InitApi.PLUGIN, BUNGEE_CORD_CHANNEL, out.toByteArray());
+      } catch (Exception e) {
+         InitApi.PLUGIN.getLogger().log(Level.WARNING, "发送跨服消息到 " + targetServer + " 失败", e);
+      }
+   }
+
    public static Optional<BcUtil.BcMessageParam> getParamByForward(byte[] message) {
       Optional<String> jsonOpt = getContentByForward(message);
       if (!jsonOpt.isPresent()) {
@@ -175,6 +200,7 @@ public final class BcUtil {
       private String playerName;
       private String senderName;
       private Long timestamp;
+      private String serverName;
 
       @Generated
       public String getPluginName() {
@@ -234,6 +260,16 @@ public final class BcUtil {
       @Generated
       public void setTimestamp(Long timestamp) {
          this.timestamp = timestamp;
+      }
+
+      @Generated
+      public String getServerName() {
+         return this.serverName;
+      }
+
+      @Generated
+      public void setServerName(String serverName) {
+         this.serverName = serverName;
       }
    }
 }
