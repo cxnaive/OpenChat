@@ -87,10 +87,10 @@ public class CrossServerSyncManager {
     // ==================== BungeeCord 区服自动发现 ====================
 
     /**
-     * 调度自动发现任务：启动后等待玩家上线，自动请求区服列表和本服名称
+     * 调度自动发现任务：启动后尽快发现，玩家上线时立即请求
      */
     private void scheduleAutoDiscovery() {
-        // 延迟 3 秒后开始，每 3 秒检查一次，最多尝试 30 次（90秒）
+        // 0.5秒后开始，每1秒检查一次，最多尝试 60 次（60秒）
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(PlayerChat.INSTANCE, task -> {
             if (hasRequestedDiscovery) {
                 task.cancel();
@@ -100,7 +100,7 @@ public class CrossServerSyncManager {
             if (hasRequestedDiscovery) {
                 task.cancel();
             }
-        }, 60L, 60L); // 3秒后开始，每3秒检查
+        }, 10L, 20L); // 0.5秒后开始，每1秒检查
     }
 
     /**

@@ -163,6 +163,9 @@ public class PlayerChat extends JavaPlugin {
             crossServerSyncManager.initialize();
             msPlugin.setCrossServerSyncManager(crossServerSyncManager);
 
+            // 注入跨服同步管理器到公告命令处理器
+            msAnnounceCommand.setCrossServerSyncManager(crossServerSyncManager);
+
             // 注入跨服同步管理器到公告管理器
             msAnnouncementManager.setCrossServerSyncManager(crossServerSyncManager);
             msAnnouncementManager.setSyncEnabled(crossServerSyncManager.isEnabled());

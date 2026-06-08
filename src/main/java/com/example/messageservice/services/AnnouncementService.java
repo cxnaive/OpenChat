@@ -61,7 +61,18 @@ public class AnnouncementService {
         }
 
         // 检查公告是否对当前服务器生效
-        String currentServer = plugin.getConfig().getString("cross-server.server-name", "unknown");
+        // 优先使用 BungeeCord 自动发现的服务器名，回退到配置
+        String currentServer = "";
+        try {
+            com.example.messageservice.managers.CrossServerSyncManager sm = plugin.getCrossServerSyncManager();
+            if (sm != null) {
+                currentServer = sm.getEffectiveServerName();
+            }
+        } catch (Exception ignored) {
+        }
+        if (currentServer == null || currentServer.isEmpty()) {
+            currentServer = plugin.getConfig().getString("cross-server.server-name", "");
+        }
         List<String> servers = announcement.getServers();
         if (servers != null && !servers.isEmpty() && !servers.contains("*")) {
             if (!servers.contains(currentServer)) {

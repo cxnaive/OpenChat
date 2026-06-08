@@ -359,7 +359,7 @@ public class ChatUtil {
         str = StrUtil.replace(str, "channel", channelName);
         str = StrUtil.replace(str, "player", player.getName());
         str = StrUtil.replace(str, "nickName", ChatConstants.PLAYER_NICK_CACHE.getOrDefault(player.getUniqueId(), player.getName()));
-        str = StrUtil.replace(str, "serverName", BaseConstants.CONFIG.getString("serverName"));
+        str = StrUtil.replace(str, "serverName", BaseConstants.CONFIG.getString("serverName", ""));
         // head组件解析
         str = BaseUtil.headComponent(str, player.getName());
         // 解析 papi 变量

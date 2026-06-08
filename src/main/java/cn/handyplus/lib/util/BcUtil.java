@@ -99,8 +99,7 @@ public final class BcUtil {
          ByteArrayDataOutput out = ByteStreams.newDataOutput();
          out.writeUTF("Forward");
          out.writeUTF(targetServer);
-         out.writeUTF("PlayerChat");
-         byte[] jsonBytes = ByteStreams.newDataOutput().toByteArray();
+         out.writeUTF("BungeeCord");
          ByteArrayDataOutput dataOut = ByteStreams.newDataOutput();
          dataOut.writeUTF(JsonUtil.toJson(content));
          out.writeShort(dataOut.toByteArray().length);

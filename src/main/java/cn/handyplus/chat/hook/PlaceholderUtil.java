@@ -65,7 +65,19 @@ public class PlaceholderUtil extends PlaceholderExpansion {
         }
         // %playerChat_server_name%
         if ("server_name".equalsIgnoreCase(placeholder)) {
-            return LegacyUtil.parseColor(BaseConstants.CONFIG.getString("serverName"));
+            // 优先使用 BungeeCord 自动发现的服务器名，回退到配置
+            try {
+                com.example.messageservice.managers.CrossServerSyncManager syncManager =
+                        com.example.messageservice.MessageServicePlugin.getInstance().getCrossServerSyncManager();
+                if (syncManager != null) {
+                    String discovered = syncManager.getEffectiveServerName();
+                    if (discovered != null && !discovered.isEmpty()) {
+                        return LegacyUtil.parseColor(discovered);
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            return LegacyUtil.parseColor(BaseConstants.CONFIG.getString("serverName", ""));
         }
         // %playerChat_[类型]%
         Optional<ChatPlayerHornEnter> hornPlayerEnterOpt = ChatPlayerHornService.getInstance().findByUidAndType(player.getUniqueId(), placeholder);
