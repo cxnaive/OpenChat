@@ -205,7 +205,7 @@ public class CrossServerSyncManager {
         if (!enabled) return;
 
         // 忽略自己发送的消息
-        if (serverName.equals(param.getServerName())) {
+        if (getEffectiveServerName().equals(param.getServerName())) {
             return;
         }
 
@@ -323,10 +323,10 @@ public class CrossServerSyncManager {
             param.setPlayerName("CONSOLE");
             param.setMessage(announcementId);
             param.setTimestamp(System.currentTimeMillis());
-            param.setServerName(serverName);
+            param.setServerName(getEffectiveServerName());
 
             // 先标记消息ID，防止重复处理
-            String messageId = serverName + ":" + param.getTimestamp() + ":" + announcementId;
+            String messageId = getEffectiveServerName() + ":" + param.getTimestamp() + ":" + announcementId;
             processedMessages.add(messageId);
 
             // 发送（使用 PlayerChat 的 sendParamForward 方法）
@@ -338,7 +338,7 @@ public class CrossServerSyncManager {
             // 发送到指定服务器
             if (player == null) {
                 // 检查当前服务器是否在目标列表中
-                if (targetServers.contains(serverName)) {
+                if (targetServers.contains(getEffectiveServerName())) {
                     announcementService.broadcastAnnouncement(announcementId);
                 } else {
                     plugin.getLogger().warning("没有在线玩家，无法发送跨服消息");
@@ -347,7 +347,7 @@ public class CrossServerSyncManager {
             }
 
             for (String targetServer : targetServers) {
-                if (targetServer.equalsIgnoreCase(serverName)) {
+                if (targetServer.equalsIgnoreCase(getEffectiveServerName())) {
                     // 当前服务器，直接执行
                     announcementService.broadcastAnnouncement(announcementId);
                     continue;
@@ -360,9 +360,9 @@ public class CrossServerSyncManager {
                 param.setPlayerName("CONSOLE");
                 param.setMessage(announcementId);
                 param.setTimestamp(System.currentTimeMillis());
-                param.setServerName(serverName);
+                param.setServerName(getEffectiveServerName());
 
-                String messageId = serverName + ":" + param.getTimestamp() + ":" + announcementId + ":" + targetServer;
+                String messageId = getEffectiveServerName() + ":" + param.getTimestamp() + ":" + announcementId + ":" + targetServer;
                 processedMessages.add(messageId);
 
                 BcUtil.sendParamForwardToServer(player, targetServer, param);
@@ -387,7 +387,7 @@ public class CrossServerSyncManager {
         param.setType("ANNOUNCEMENT_UPDATE");
         param.setMessage(version + ":" + updatedBy);
         param.setTimestamp(System.currentTimeMillis());
-        param.setServerName(serverName);
+        param.setServerName(getEffectiveServerName());
 
         // 发送（使用 PlayerChat 的 sendParamForward 方法）
         BcUtil.sendParamForward(player, param);
@@ -408,7 +408,7 @@ public class CrossServerSyncManager {
         param.setPlayerName("CONSOLE");
         param.setMessage(announcement.getId());
         param.setTimestamp(System.currentTimeMillis());
-        param.setServerName(serverName);
+        param.setServerName(getEffectiveServerName());
 
         BcUtil.sendParamForward(player, param);
     }
@@ -426,7 +426,7 @@ public class CrossServerSyncManager {
         param.setPlayerName("CONSOLE");
         param.setMessage(announcementId);
         param.setTimestamp(System.currentTimeMillis());
-        param.setServerName(serverName);
+        param.setServerName(getEffectiveServerName());
 
         BcUtil.sendParamForward(player, param);
     }
@@ -450,7 +450,7 @@ public class CrossServerSyncManager {
         param.setPlayerName("CONSOLE");
         param.setMessage(jsonMessage);
         param.setTimestamp(System.currentTimeMillis());
-        param.setServerName(serverName);
+        param.setServerName(getEffectiveServerName());
 
         BcUtil.sendParamForward(player, param);
     }
@@ -486,10 +486,10 @@ public class CrossServerSyncManager {
         param.setPlayerName("CONSOLE");
         param.setMessage(messageBuilder.toString());
         param.setTimestamp(System.currentTimeMillis());
-        param.setServerName(serverName);
+        param.setServerName(getEffectiveServerName());
 
         // 先标记消息ID，防止重复处理
-        String messageId = serverName + ":" + param.getTimestamp() + ":" + content.hashCode();
+        String messageId = getEffectiveServerName() + ":" + param.getTimestamp() + ":" + content.hashCode();
         processedMessages.add(messageId);
 
         // 发送（使用 PlayerChat 的 sendParamForward 方法）
@@ -590,7 +590,7 @@ public class CrossServerSyncManager {
         }
 
         for (String targetServer : targetServers) {
-            if (targetServer.equalsIgnoreCase(serverName)) {
+            if (targetServer.equalsIgnoreCase(getEffectiveServerName())) {
                 executeTemporaryAnnouncement(content, displayType, soundName);
                 continue;
             }
@@ -606,9 +606,9 @@ public class CrossServerSyncManager {
             param.setPlayerName("CONSOLE");
             param.setMessage(messageBuilder.toString());
             param.setTimestamp(System.currentTimeMillis());
-            param.setServerName(serverName);
+            param.setServerName(getEffectiveServerName());
 
-            String messageId = serverName + ":" + param.getTimestamp() + ":" + content.hashCode() + ":" + targetServer;
+            String messageId = getEffectiveServerName() + ":" + param.getTimestamp() + ":" + content.hashCode() + ":" + targetServer;
             processedMessages.add(messageId);
 
             BcUtil.sendParamForwardToServer(player, targetServer, param);
@@ -637,7 +637,7 @@ public class CrossServerSyncManager {
         }
 
         for (String targetServer : targetServers) {
-            if (targetServer.equalsIgnoreCase(serverName)) {
+            if (targetServer.equalsIgnoreCase(getEffectiveServerName())) {
                 List<Player> targets = new ArrayList<>(Bukkit.getOnlinePlayers());
                 announcementService.sendImmediateMessage(message, targets, Announcement.DisplayType.CHAT);
                 continue;
@@ -652,7 +652,7 @@ public class CrossServerSyncManager {
             param.setPlayerName("CONSOLE");
             param.setMessage(jsonMessage);
             param.setTimestamp(System.currentTimeMillis());
-            param.setServerName(serverName);
+            param.setServerName(getEffectiveServerName());
 
             BcUtil.sendParamForwardToServer(player, targetServer, param);
         }
